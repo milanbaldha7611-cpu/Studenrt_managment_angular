@@ -1,5 +1,16 @@
 # 🎓 StudentTech — Advanced Student Management System
 
+<div align="center">
+  <img src="https://img.shields.io/badge/Angular-17-DD0031.svg?logo=angular" alt="Angular 17">
+  <img src="https://img.shields.io/badge/Node.js-20.x-339933.svg?logo=node.js" alt="Node.js">
+  <img src="https://img.shields.io/badge/MySQL-8.0-4479A1.svg?logo=mysql" alt="MySQL">
+  <img src="https://img.shields.io/badge/Bootstrap-5.3-7952B3.svg?logo=bootstrap" alt="Bootstrap 5.3">
+  <img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License MIT">
+</div>
+
+---
+
+### 🚀 Overview
 A premium, modern, full-stack web application designed for universities and colleges to seamlessly manage student records, track attendance, publish exam results, issue digital ID cards, and manage system users. Built with **Angular 17**, **Node.js/Express**, and **MySQL**, featuring a stunning glassmorphism UI, dark mode, and role-based access control.
 
 ---

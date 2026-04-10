@@ -147,8 +147,10 @@ Modern Angular 17 application with a clean architecture.
 
 | Role | Email | Password |
 |---|---|---|
-| **Admin** | `admin@school.com` | `admin123` |
-| **Student** | `john.doe@student.com` | `student123` |
+| **Admin** | `admin@gmail.com` | `admin123` |
+| **Student (General)** | `rahul22@gmail.com` | `student123` |
+| **Student (1st Sem)** | `aarav37@gmail.com` | `student123` |
+| **Student (8th Sem)** | `radhika19@gmail.com` | `student123` |
 
 ---
 

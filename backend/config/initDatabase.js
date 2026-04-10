@@ -21,6 +21,11 @@ async function initDatabase() {
         email VARCHAR(150) NOT NULL UNIQUE,
         phone VARCHAR(15),
         course VARCHAR(100),
+        semester VARCHAR(20),
+        academic_year VARCHAR(20),
+        gender VARCHAR(20),
+        college_name VARCHAR(150),
+        university_name VARCHAR(150),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
@@ -53,6 +58,8 @@ async function initDatabase() {
         student_id INT NOT NULL,
         exam_name VARCHAR(100) NOT NULL,
         subject VARCHAR(100) NOT NULL,
+        semester VARCHAR(20),
+        academic_year VARCHAR(20),
         marks_obtained DECIMAL(5,2) NOT NULL,
         max_marks DECIMAL(5,2) NOT NULL,
         FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE

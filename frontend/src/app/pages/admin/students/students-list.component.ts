@@ -2,12 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ApiService, Student } from '../../../core/services/api.service';
-import { UpperCasePipe } from '@angular/common';
+import { UpperCasePipe, CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-students-list',
   standalone: true,
-  imports: [RouterLink, FormsModule, UpperCasePipe],
+  imports: [RouterLink, FormsModule, UpperCasePipe, CommonModule],
   template: `
     <div class="animate-fade-in pb-5">
       <div class="d-flex justify-content-between align-items-center mb-4">
@@ -25,13 +25,27 @@ import { UpperCasePipe } from '@angular/common';
 
       <div class="card border-0 bg-white shadow-sm rounded-4 mb-4">
         <div class="card-body p-4">
-           <div class="d-flex align-items-center bg-light rounded-pill p-2 border">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-search text-muted ms-3 me-2" viewBox="0 0 16 16">
-              <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
-            </svg>
-            <input type="text" class="form-control border-0 bg-transparent shadow-none" placeholder="Search by name, email, phone, or course..." [(ngModel)]="search" (keyup.enter)="load(1)" />
-            <button class="btn btn-primary rounded-pill px-4 ms-2" type="button" (click)="load(1)">Search</button>
-          </div>
+           <div class="row g-3">
+             <div class="col-md-7">
+               <div class="d-flex align-items-center bg-light rounded-pill p-1 border">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-search text-muted ms-3 me-2" viewBox="0 0 16 16">
+                  <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+                </svg>
+                <input type="text" class="form-control border-0 bg-transparent shadow-none" placeholder="Search by name, email, or course..." [(ngModel)]="search" (keyup.enter)="onSearch()" />
+              </div>
+             </div>
+             <div class="col-md-3">
+               <select class="form-select border rounded-pill bg-light h-100" [(ngModel)]="selectedSemester" (change)="onSemesterChange()">
+                 <option value="">All Semesters</option>
+                 @for (sem of semesters; track sem) {
+                   <option [value]="sem">{{ sem }}</option>
+                 }
+               </select>
+             </div>
+             <div class="col-md-2">
+               <button class="btn btn-primary rounded-pill w-100 h-100 shadow-sm" type="button" (click)="onSearch()">Search</button>
+             </div>
+           </div>
         </div>
       </div>
 
@@ -43,7 +57,7 @@ import { UpperCasePipe } from '@angular/common';
                 <th scope="col" class="ps-4 rounded-start" style="width: 50px;">ID</th>
                 <th scope="col">Student Details</th>
                 <th scope="col">Contact Info</th>
-                <th scope="col">Course</th>
+                <th scope="col">Course / Sem</th>
                 <th scope="col" class="text-end pe-4 rounded-end">Actions</th>
               </tr>
             </thead>
@@ -63,63 +77,36 @@ import { UpperCasePipe } from '@angular/common';
                              <span class="badge bg-light text-secondary border ms-2 small fw-normal">{{ s.gender }}</span>
                           }
                         </div>
-                        <div class="small text-muted text-truncate" style="max-width: 150px;">Student ID: {{ s.id }}</div>
+                        <div class="small text-muted">ID: {{ s.id }} | Enrol: <span class="text-primary fw-bold">{{ s.enrollment_no || 'N/A' }}</span></div>
                       </div>
                     </div>
                   </td>
                   <td>
-                     <div class="text-dark small mb-1">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-envelope-fill text-muted me-1" viewBox="0 0 16 16">
-                          <path d="M.05 3.555A2 2 0 0 1 2 2h12a2 2 0 0 1 1.95 1.555L8 8.414.05 3.555ZM0 4.697v7.104l5.803-3.558L0 4.697ZM6.761 8.83l-6.57 4.027A2 2 0 0 0 2 14h12a2 2 0 0 0 1.808-1.144l-6.57-4.027L8 9.586l-1.239-.757Zm3.436-.586L16 11.801V4.697l-5.803 3.546Z"/>
-                        </svg>
-                        {{ s.email }}
-                     </div>
-                     <div class="text-muted small">
-                         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-telephone-fill text-muted me-1" viewBox="0 0 16 16">
-                            <path fill-rule="evenodd" d="M1.885.511a1.745 1.745 0 0 1 2.61.163L6.29 2.98c.329.423.445.974.315 1.494l-.547 2.19a.678.678 0 0 0 .178.643l2.457 2.457a.678.678 0 0 0 .644.178l2.189-.547a1.745 1.745 0 0 1 1.494.315l2.306 1.794c.829.645.905 1.87.163 2.611l-1.034 1.034c-.74.74-1.846 1.065-2.877.702a18.634 18.634 0 0 1-7.01-4.42 18.634 18.634 0 0 1-4.42-7.009c-.362-1.03-.037-2.137.703-2.877L1.885.511z"/>
-                          </svg>
-                         {{ s.phone || 'No phone' }}
-                     </div>
+                     <div class="text-dark small mb-1">{{ s.email }}</div>
+                     <div class="text-muted small">{{ s.phone || 'No phone' }}</div>
                   </td>
                   <td>
-                    <span class="badge bg-secondary bg-opacity-10 text-secondary border fw-medium px-3 py-2 rounded-pill">{{ s.course || 'Unassigned' }}</span>
+                    <div class="d-flex align-items-center gap-2">
+                      <div class="badge bg-secondary bg-opacity-10 text-secondary border fw-medium px-2 py-1 rounded-pill text-truncate" style="max-width: 120px;" [title]="s.course">{{ s.course || 'Unassigned' }}</div>
+                      @if (s.semester) {
+                         <span class="badge bg-primary bg-opacity-10 text-primary border-0 small fw-bold" style="font-size: 0.7rem;">{{ s.semester }}</span>
+                      }
+                    </div>
                   </td>
                   <td class="text-end pe-4">
-                     <div class="dropdown d-inline-block">
-                        <button class="btn btn-light btn-sm rounded-circle p-2 border" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-three-dots-vertical" viewBox="0 0 16 16">
-                            <path d="M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+                    <div class="d-flex justify-content-end gap-2">
+                       <a [routerLink]="['/admin/students/edit', s.id]" class="btn btn-outline-primary btn-sm rounded-3 px-3 shadow-none border-0 bg-primary bg-opacity-10 action-btn-edit" title="Edit Profile">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
+                            <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+                            <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/>
                           </svg>
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3">
-                          <li>
-                            <a class="dropdown-item d-flex align-items-center py-2" [routerLink]="['/admin/attendance/student', s.id]">
-                              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-calendar2-check text-muted me-2" viewBox="0 0 16 16">
-                                <path d="M10.854 8.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L7.5 10.793l2.646-2.647a.5.5 0 0 1 .708 0z"/>
-                                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM2 2a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H2z"/>
-                              </svg>
-                              View Attendance
-                            </a>
-                          </li>
-                          <li>
-                            <a class="dropdown-item d-flex align-items-center py-2" [routerLink]="['/admin/students/edit', s.id]">
-                               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-pencil me-2 text-muted" viewBox="0 0 16 16">
-                                <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/>
-                              </svg>
-                              Edit Profile
-                            </a>
-                          </li>
-                          <li><hr class="dropdown-divider"></li>
-                          <li>
-                            <button type="button" class="dropdown-item d-flex align-items-center text-danger py-2" (click)="delete(s)">
-                               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-trash3 me-2" viewBox="0 0 16 16">
-                                <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5ZM11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H2.506a.58.58 0 0 0-.01 0H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1h-.995a.59.59 0 0 0-.01 0H11Zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5h9.916Zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47ZM8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5Z"/>
-                              </svg>
-                              Delete Student
-                            </button>
-                          </li>
-                        </ul>
-                      </div>
+                       </a>
+                       <button (click)="delete(s)" class="btn btn-outline-danger btn-sm rounded-3 px-3 shadow-none border-0 bg-danger bg-opacity-10 action-btn-delete" title="Delete Student">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" class="bi bi-trash3-fill" viewBox="0 0 16 16">
+                            <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5Zm-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5ZM4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06Zm6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528ZM8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5Z"/>
+                          </svg>
+                       </button>
+                    </div>
                   </td>
                 </tr>
               } @empty {
@@ -163,6 +150,12 @@ import { UpperCasePipe } from '@angular/common';
 export class StudentsListComponent implements OnInit {
   students: Student[] = [];
   search = '';
+  selectedSemester = '';
+  semesters: string[] = [
+    '1st Semester', '2nd Semester', '3rd Semester', '4th Semester',
+    '5th Semester', '6th Semester', '7th Semester', '8th Semester'
+  ];
+
   pagination = { page: 1, limit: 10, total: 0, totalPages: 0 };
   get pages(): number[] {
     const p = this.pagination;
@@ -177,8 +170,19 @@ export class StudentsListComponent implements OnInit {
     this.load(1);
   }
 
+  onSearch() {
+    this.selectedSemester = ''; // Clear semester when searching by name
+    this.load(1);
+  }
+
+  onSemesterChange() {
+    this.search = ''; // Clear search when filtering by semester
+    this.load(1);
+  }
+
   load(page: number) {
-    this.api.getStudents(page, this.pagination.limit, this.search).subscribe((res) => {
+    // Send both, but since we clear the other, only one will be active
+    this.api.getStudents(page, this.pagination.limit, this.search, this.selectedSemester).subscribe((res) => {
       this.students = res.students || [];
       this.pagination = res.pagination;
     });

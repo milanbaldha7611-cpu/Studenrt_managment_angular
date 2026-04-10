@@ -14,14 +14,23 @@ router.get('/', adminAuth, async (req, res) => {
     const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 10));
     const offset = (page - 1) * limit;
     const search = (req.query.search || '').trim();
+    const semesterFilter = (req.query.semester || '').trim();
 
-    let whereClause = '';
+    const whereConditions = [];
     const params = [];
+
     if (search) {
-      whereClause = 'WHERE first_name LIKE ? OR last_name LIKE ? OR email LIKE ? OR course LIKE ?';
+      whereConditions.push('(first_name LIKE ? OR last_name LIKE ? OR email LIKE ? OR course LIKE ?)');
       const term = `%${search}%`;
       params.push(term, term, term, term);
     }
+
+    if (semesterFilter) {
+      whereConditions.push('semester = ?');
+      params.push(semesterFilter);
+    }
+
+    const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
 
     const [countResult] = await query(
       `SELECT COUNT(*) as total FROM students ${whereClause}`,
@@ -29,10 +38,10 @@ router.get('/', adminAuth, async (req, res) => {
     );
     const total = countResult.total;
 
-    params.push(limit, offset);
+    const selectParams = [...params, limit, offset];
     const students = await query(
-      `SELECT * FROM students ${whereClause} ORDER BY created_at DESC LIMIT ? OFFSET ?`,
-      params
+      `SELECT * FROM students ${whereClause} ORDER BY id DESC LIMIT ? OFFSET ?`,
+      selectParams
     );
 
     res.json({
@@ -89,19 +98,20 @@ router.get('/:id', async (req, res) => {
 // Add student - admin only
 router.post('/', adminAuth, async (req, res) => {
   try {
-    const { first_name, last_name, email, phone, course, gender, college_name, university_name } = req.body;
+    const { first_name, last_name, email, enrollment_no, phone, course, semester, gender, college_name, university_name } = req.body;
     if (!first_name || !last_name || !email) {
       return res.status(400).json({ message: 'First name, last name and email are required.' });
     }
     await query(
-      'INSERT INTO students (first_name, last_name, email, phone, course, gender, college_name, university_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-      [first_name, last_name, email, phone || null, course || null, gender || null, college_name || null, university_name || null]
+      'INSERT INTO students (first_name, last_name, email, enrollment_no, phone, course, semester, gender, college_name, university_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [first_name, last_name, email, enrollment_no || null, phone || null, course || null, semester || null, gender || null, college_name || null, university_name || null]
     );
     const [created] = await query('SELECT * FROM students WHERE email = ?', [email]);
     res.status(201).json(created);
   } catch (err) {
     if (err.code === 'ER_DUP_ENTRY') {
-      return res.status(400).json({ message: 'Email already exists.' });
+      const field = err.message.includes('email') ? 'Email' : 'Enrollment number';
+      return res.status(400).json({ message: `${field} already exists.` });
     }
     res.status(500).json({ message: err.message });
   }
@@ -110,23 +120,37 @@ router.post('/', adminAuth, async (req, res) => {
 // Update student - admin only
 router.put('/:id', adminAuth, async (req, res) => {
   try {
-    const { first_name, last_name, email, phone, course, gender, college_name, university_name } = req.body;
+    const { first_name, last_name, email, enrollment_no, phone, course, semester, gender, college_name, university_name } = req.body;
     const [existing] = await query('SELECT * FROM students WHERE id = ?', [req.params.id]);
     if (!existing) return res.status(404).json({ message: 'Student not found.' });
+
+    // Update students table
     await query(
-      'UPDATE students SET first_name = ?, last_name = ?, email = ?, phone = ?, course = ?, gender = ?, college_name = ?, university_name = ? WHERE id = ?',
+      'UPDATE students SET first_name = ?, last_name = ?, email = ?, enrollment_no = ?, phone = ?, course = ?, semester = ?, gender = ?, college_name = ?, university_name = ? WHERE id = ?',
       [
         first_name ?? existing.first_name,
         last_name ?? existing.last_name,
         email ?? existing.email,
+        enrollment_no !== undefined ? enrollment_no : existing.enrollment_no,
         phone !== undefined ? phone : existing.phone,
         course !== undefined ? course : existing.course,
+        semester !== undefined ? semester : existing.semester,
         gender !== undefined ? gender : existing.gender,
         college_name !== undefined ? college_name : existing.college_name,
         university_name !== undefined ? university_name : existing.university_name,
         req.params.id,
       ]
     );
+
+    // Sync with users table (using the original email to find the record)
+    const newFullName = `${first_name ?? existing.first_name} ${last_name ?? existing.last_name}`;
+    const newEmail = email ?? existing.email;
+    
+    await query(
+      'UPDATE users SET name = ?, email = ? WHERE email = ? AND role = ?',
+      [newFullName, newEmail, existing.email, 'student']
+    );
+
     const [updated] = await query('SELECT * FROM students WHERE id = ?', [req.params.id]);
     res.json(updated);
   } catch (err) {

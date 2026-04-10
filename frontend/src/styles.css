@@ -399,8 +399,17 @@ main {
   100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
 }
 
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 .animate-fade-in {
   animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .animate-slide-right {
@@ -417,6 +426,25 @@ main {
 .hover-pulse:hover {
   animation: pulseSoft 1.5s infinite;
   transform: translateY(-2px);
+}
+
+/* Action Buttons Hover Effects */
+.action-btn-edit, .action-btn-delete {
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.action-btn-edit:hover {
+  background-color: var(--bs-primary) !important;
+  color: white !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(13, 110, 253, 0.25);
+}
+
+.action-btn-delete:hover {
+  background-color: var(--bs-danger) !important;
+  color: white !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.25);
 }
 
 .delay-100 { animation-delay: 0.1s; }

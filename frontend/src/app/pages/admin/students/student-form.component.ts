@@ -65,14 +65,22 @@ import { ApiService } from '../../../core/services/api.service';
               </div>
             </div>
 
-            <div class="mb-4">
-               <div class="form-floating">
+            <div class="row g-4 mb-4">
+              <div class="col-md-7">
+                <div class="form-floating">
                   <input type="email" class="form-control bg-light border-0 px-4" id="email" placeholder="Email Address" formControlName="email" [class.is-invalid]="form.get('email')?.invalid && form.get('email')?.touched" />
                   <label for="email" class="ps-4 text-muted">Email Address</label>
                   @if (form.get('email')?.invalid && form.get('email')?.touched) {
                     <div class="invalid-feedback ps-4 text-uppercase tracking-wider small fw-bold mt-2">A valid email is required.</div>
                   }
                 </div>
+              </div>
+              <div class="col-md-5">
+                <div class="form-floating">
+                  <input type="text" class="form-control bg-light border-0 px-4" id="enrollment" placeholder="Enrollment No" formControlName="enrollment_no" />
+                  <label for="enrollment" class="ps-4 text-muted">Enrollment Number</label>
+                </div>
+              </div>
             </div>
 
             <div class="row g-4 mb-5">
@@ -95,8 +103,12 @@ import { ApiService } from '../../../core/services/api.service';
               </div>
             </div>
             
+            <hr class="border-light opacity-100 mb-4">
+            <h5 class="mb-4 fw-bold">Academic Information</h5>
+
+            
             <div class="row g-4 mb-5">
-              <div class="col-md-6">
+              <div class="col-md-5">
                  <div class="form-floating">
                     <select class="form-select bg-light border-0 px-4" id="course" formControlName="course" aria-label="Course Selection">
                       <option value="" disabled selected>Select a Course</option>
@@ -111,6 +123,22 @@ import { ApiService } from '../../../core/services/api.service';
                       <option value="Diploma in Engineering">Diploma in Engineering</option>
                     </select>
                     <label for="course" class="ps-4 text-muted">Course Enrollment</label>
+                </div>
+              </div>
+              <div class="col-md-7">
+                 <div class="form-floating">
+                    <select class="form-select bg-light border-0 px-4" id="semester" formControlName="semester" aria-label="Semester Selection">
+                      <option value="" disabled selected>Select Semester</option>
+                      <option value="1st Semester">1st Semester</option>
+                      <option value="2nd Semester">2nd Semester</option>
+                      <option value="3rd Semester">3rd Semester</option>
+                      <option value="4th Semester">4th Semester</option>
+                      <option value="5th Semester">5th Semester</option>
+                      <option value="6th Semester">6th Semester</option>
+                      <option value="7th Semester">7th Semester</option>
+                      <option value="8th Semester">8th Semester</option>
+                    </select>
+                    <label for="semester" class="ps-4 text-muted">Semester</label>
                 </div>
               </div>
             </div>
@@ -167,8 +195,10 @@ export class StudentFormComponent implements OnInit {
     first_name: ['', Validators.required],
     last_name: ['', Validators.required],
     email: ['', [Validators.required, Validators.email]],
+    enrollment_no: [''],
     phone: [''],
     course: [''],
+    semester: [''],
     gender: [''],
     university_name: [''],
     college_name: [''],
@@ -244,8 +274,10 @@ export class StudentFormComponent implements OnInit {
           first_name: s.first_name,
           last_name: s.last_name,
           email: s.email,
+          enrollment_no: s.enrollment_no || '',
           phone: s.phone || '',
           course: s.course || '',
+          semester: s.semester || '',
           gender: s.gender || '',
           university_name: s.university_name || '',
           college_name: s.college_name || '',

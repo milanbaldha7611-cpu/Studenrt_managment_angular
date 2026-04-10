@@ -78,6 +78,10 @@ import { ApiService, Student } from '../../../core/services/api.service';
                           <span class="fw-bold text-dark small text-truncate text-end ps-2" style="max-width: 150px;" [title]="profile.course">{{ profile.course || 'N/A' }}</span>
                        </div>
                        <div class="d-flex justify-content-between mb-2">
+                          <span class="text-muted small" style="font-size: 0.75rem;">Semester</span>
+                          <span class="fw-bold text-dark small">{{ profile.semester || 'N/A' }}</span>
+                       </div>
+                       <div class="d-flex justify-content-between mb-2">
                           <span class="text-muted small" style="font-size: 0.75rem;">University</span>
                           <span class="fw-bold text-dark small text-truncate text-end ps-2" style="max-width: 160px;" [title]="profile.university_name">{{ profile.university_name || 'N/A' }}</span>
                        </div>

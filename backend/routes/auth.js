@@ -14,10 +14,23 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ message: 'Name, email and password are required.' });
     }
     const hashedPassword = await bcrypt.hash(password, 10);
+    
+    // Create User record
     await query(
       'INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)',
       [name, email, hashedPassword, 'student']
     );
+
+    // Create basic Student record
+    const names = name.split(' ');
+    const firstName = names[0];
+    const lastName = names.slice(1).join(' ') || 'Student';
+    
+    await query(
+      'INSERT INTO students (first_name, last_name, email) VALUES (?, ?, ?)',
+      [firstName, lastName, email]
+    );
+
     const [user] = await query('SELECT id, name, email, role FROM users WHERE email = ?', [email]);
     const token = jwt.sign(
       { id: user.id, email: user.email, role: user.role },

@@ -8,8 +8,10 @@ export interface Student {
   first_name: string;
   last_name: string;
   email: string;
+  enrollment_no?: string;
   phone?: string;
   course?: string;
+  semester?: string;
   gender?: string;
   college_name?: string;
   university_name?: string;
@@ -39,9 +41,10 @@ export class ApiService {
 
   constructor(private http: HttpClient) { }
 
-  getStudents(page = 1, limit = 10, search = ''): Observable<PaginatedResponse<Student>> {
+  getStudents(page = 1, limit = 10, search = '', semester = ''): Observable<PaginatedResponse<Student>> {
     let params = new HttpParams().set('page', page).set('limit', limit);
     if (search) params = params.set('search', search);
+    if (semester) params = params.set('semester', semester);
     return this.http.get<PaginatedResponse<Student>>(`${this.base}/students`, { params });
   }
 
